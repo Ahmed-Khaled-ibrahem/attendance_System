@@ -1,0 +1,227 @@
+function add_User(sheetID, data) {
+  var ss = SpreadsheetApp.openByUrl("https://docs.google.com/spreadsheets/d/" + sheetID + "/edit");
+  var sheet = ss.getSheets()[0];
+  var row = sheet.getLastRow() + 1;
+  var error = 0;
+
+  for (var i in data) {
+
+    var result = sheet.getRange("A1:Z1").createTextFinder(i).matchCase(false).findNext();
+    if (result != null) {
+      colom = result.getColumn();
+      sheet.getRange(row, colom).setValue(data[i]);
+    }
+    else { error++ }
+  }
+
+  if (error != data.length) {  // user witten 
+    var attendance_sheet = ss.getSheets()[1];
+    attendance_sheet.getRange(row, 1).setValue(data['UID']);
+  }   /// lenght or lenght()
+  return error;
+}
+
+function edit_User(sheetID, data, userID) {
+  var ss = SpreadsheetApp.openByUrl("https://docs.google.com/spreadsheets/d/" + sheetID + "/edit");
+  var sheet = ss.getSheets()[0];
+  var error = 0;
+
+  var search = sheet.createTextFinder(userID).matchCase(false).findNext();
+  if (search != null) {
+    var row = search.getRow();
+
+    for (var i in data) {
+      var result = sheet.getRange("A1:Z1").createTextFinder(i).matchCase(true).findNext();
+      if (result != null) {
+        colom = result.getColumn();
+        sheet.getRange(row, colom).setValue(data[i]);
+      }
+      else { error++ }
+    }
+  }
+  else {
+    return 'User not found'
+  }
+  return error;
+}
+
+function delete_User(sheetID, userID) {
+
+  var ss = SpreadsheetApp.openByUrl("https://docs.google.com/spreadsheets/d/" + sheetID + "/edit");
+  var sheet = ss.getSheets()[0];
+  var attendance_sheet = ss.getSheets()[1];
+
+  var search = sheet.createTextFinder(userID).matchCase(false).findNext();
+  if (search != null) {
+    var row = search.getRow();
+
+    sheet.deleteRow(row);
+    attendance_sheet.deleteRow(row);
+
+  }
+  else {
+    return 'User not found'
+  }
+  return 'removed';
+}
+
+function get_User(sheetID, userID) {
+
+  var ss = SpreadsheetApp.openByUrl("https://docs.google.com/spreadsheets/d/" + sheetID + "/edit");
+  var sheet = ss.getSheets()[0];
+  var data = sheet.getDataRange().getValues();
+
+  var result = sheet.createTextFinder(userID).findNext();
+  if (result != null) {
+    row = result.getRow()
+    user = data[row - 1];
+    var user_data = new Map()
+
+    for (i in data[0]) {
+      user_data[data[0][i]] = data[row - 1][i]
+    }
+    //user_data['attendance'] = convertMapToString( get_User_attendance(ss.getSheets()[1], row - 1, time) )
+    user_data['attendance'] = get_User_attendance(ss.getSheets()[1], row - 1) 
+    return user_data
+  }
+  else {
+    return 'no user'
+  }
+}
+
+function get_User_attendance(sheet, index) {
+  var data = sheet.getDataRange().getValues();
+  var user_attendance = new Map()
+
+  for (i in data[0]) {
+    if (i == 0) { continue }
+    user_attendance[data[0][i]] = data[index][i]
+  }
+
+  return data[0][i];
+}
+
+function get_all_Users(sheetID) {
+
+  var ss = SpreadsheetApp.openByUrl("https://docs.google.com/spreadsheets/d/" + sheetID + "/edit");
+  var sheet = ss.getSheets()[0];
+  var data = sheet.getDataRange().getValues();
+  var output = []
+  var user = new Map()
+
+  for (i in data) {
+    if (i == 0) { continue }
+
+    for (j in data[0]) {
+      user[data[0][j]] = data[i][j]
+
+    }
+    //Logger.log(user)
+    output.push( user )
+  }
+  Logger.log(output)
+  return JSON.stringify(output);
+
+}
+
+function register(sheetID, userID) {
+
+  var ss = SpreadsheetApp.openByUrl("https://docs.google.com/spreadsheets/d/" + sheetID + "/edit");
+  var sheet = ss.getSheets()[0];
+  var attendance_sheet = ss.getSheets()[1];
+
+  var result = sheet.createTextFinder(userID).matchCase(false).findNext();
+  if (result != null) {
+    row = result.getRow();
+    var day_result = attendance_sheet.createTextFinder(new Date().toLocaleDateString()).matchCase(false).findNext();
+    var colom = 1;
+    if (day_result == null) {
+      //Logger.log('new day attendance')
+      colom = attendance_sheet.getLastColumn() + 1;
+      var cell = attendance_sheet.getRange(1, colom);
+      cell.setValue(new Date().toLocaleDateString());
+    }
+    else {
+      colom = day_result.getColumn();
+    }
+    var cell = attendance_sheet.getRange(row, colom);
+    var date_now = new Date()
+    cell.setValue('(' + date_now.getHours() + ':' + date_now.getMinutes() + ':' + date_now.getSeconds() + ')')
+    return 'Done'
+  }
+  else { Logger.log('not user found'); return 'not user found' }
+
+}
+
+function register_From_ESP(RFID) {
+
+  var groups = getFirebaseData('jCekYTPEXmMD7XJWlJdPPtrLBED2').groups;
+
+  for (group in groups) {
+    Logger.log(groups[group])
+    var ss = SpreadsheetApp.openByUrl("https://docs.google.com/spreadsheets/d/" + groups[group] + "/edit");
+    var sheet = ss.getSheets()[0];
+
+    var result = sheet.createTextFinder(RFID).matchCase(true).findNext();
+    if (result != null) {
+      var attendance_sheet = ss.getSheets()[1];
+      row = result.getRow();
+      var day_result = attendance_sheet.createTextFinder(new Date().toLocaleDateString()).matchCase(false).findNext();
+      var colom = 1;
+      if (day_result == null) {
+        //Logger.log('new day attendance')
+        colom = attendance_sheet.getLastColumn() + 1;
+        var cell = attendance_sheet.getRange(1, colom);
+        cell.setValue(new Date().toLocaleDateString());
+      }
+      else {
+        colom = day_result.getColumn();
+      }
+      var date_now = new Date()
+      var cell = attendance_sheet.getRange(row, colom);
+      cell.setValue('(' + date_now.getHours() + ':' + date_now.getMinutes() + ':' + date_now.getSeconds() + ')');
+
+      var name = get_name(sheet, row);
+      var photo = get_photo(sheet, row);
+
+      cardToFirebase(group, photo, RFID, name, 'Done'); //GI,IMG,ID,Name,St
+
+      return 'Done'
+    }
+    else { Logger.log('not user found in this sheet') }
+
+  }
+
+  Logger.log('not exicteing card')
+  cardToFirebase('none', 'none', RFID, 'none', 'Not Found');
+
+}
+
+function get_name(sheet, row) {
+
+  var result = sheet.getRange("A1:Z1").createTextFinder('Name').matchCase(true).findNext();
+  if (result != null) {
+    column = result.getColumn();
+    var cell = sheet.getRange(row, column);
+    return cell.getValue().toString();
+  }
+  else {
+    return 'none'
+  }
+}
+
+function get_photo(sheet, row) {
+
+  var result = sheet.getRange("A1:Z1").createTextFinder('Img').matchCase(true).findNext();
+  if (result != null) {
+    column = result.getColumn();
+    var cell = sheet.getRange(row, column);
+    return cell.getValue().toString();
+  }
+  else {
+    return 'none'
+  }
+
+}
+
+
