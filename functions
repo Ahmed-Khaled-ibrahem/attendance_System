@@ -1,0 +1,52 @@
+function getFirebaseData(userName) {
+
+  var url = "https://id-presence-default-rtdb.firebaseio.com/" + userName + ".json?&auh=b5j47C7ebCHq5T4N2CpJAOTZF5Idn1q36WiUbsxG";
+  var res = UrlFetchApp.fetch(url);
+  var content = res.getContentText();
+  var json = JSON.parse(content);
+  return json;
+}
+
+
+function convertStringToMap(text) {
+  //text = '{UID:18010103,Name:ahmed Khaled,Phone:01288534459,Address:Elahadara,Email:ahmedkhaledibrahem@gmail.com,age:21}'
+  output = new Map()
+  temp = String(text).substring(1, String(text).length - 1)
+
+  items = (temp).split(',')
+  for (item in items) {
+    parameters = (items[item]).split(':')
+    output[parameters[0]] = parameters[1]
+  }
+  //Logger.log(output)
+  return output;
+}
+
+function cardToFirebase(GI, IMG, ID, Name, St) {
+
+  var firebaseUrl = "https://id-presence-default-rtdb.firebaseio.com/";
+  var secret = "b5j47C7ebCHq5T4N2CpJAOTZF5Idn1q36WiUbsxG";
+  var base = FirebaseApp.getDatabaseByUrl(firebaseUrl, secret);
+
+  base.setData('jCekYTPEXmMD7XJWlJdPPtrLBED2/lastCard/groupIndex', GI);
+  base.setData('jCekYTPEXmMD7XJWlJdPPtrLBED2/lastCard/imgUrl', IMG);
+  base.setData('jCekYTPEXmMD7XJWlJdPPtrLBED2/lastCard/lastID', ID);
+  base.setData('jCekYTPEXmMD7XJWlJdPPtrLBED2/lastCard/name', Name);
+  base.setData('jCekYTPEXmMD7XJWlJdPPtrLBED2/lastCard/state', St);
+
+}
+
+function convertMapToString(map) {
+  //text = '{UID:18010103,Name:ahmed Khaled,Phone:01288534459,Address:Elahadara,Email:ahmedkhaledibrahem@gmail.com,age:21}'
+
+  var output = '{'
+
+  for (i in map) {
+    output += i + ':' + map[i] + ','
+    //Logger.log(i)
+  }
+  output = String(output).substring(0, String(output).length - 1)
+  output += '}'
+  Logger.log(output)
+  return output;
+}
