@@ -1,0 +1,17 @@
+function addNewSheet(name, emails, colums_title) {
+
+  var ss = SpreadsheetApp.create(name);
+  ss.addEditors(['ahmedkhaledibrahem@gmail.com']);
+  ss.addViewers(emails);
+  ss.insertSheet();
+  attendance_Sheet = ss.getSheets()[1];
+  attendance_Sheet.setName(name + '- attendance');
+
+  Sheet = ss.getSheets()[0];
+  Sheet.setName(name + '- Data');
+  colums_title = String(colums_title).substring(1, String(colums_title).length - 1)
+  splited = (colums_title).split(',')
+  var nColumns = splited.length
+  Sheet.getRange(1, 1, 1, nColumns).setValues([splited]);
+  return ss.getId();
+}
