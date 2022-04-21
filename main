@@ -1,0 +1,59 @@
+function doGet(e) {
+
+  var func = e.parameters.func;
+  var sheetName = e.parameters.sheetName;
+  var viewersEmailsList = e.parameters.viewersEmailsList;
+  var columnsTitles = e.parameters.columnsTitles;
+  var sheetID = e.parameters.sheetID;
+  var userData = e.parameters.userData;
+  var uid = e.parameters.uid;
+  var rfid = e.parameters.rfid;
+
+  if (func == "addsheet") {
+    mailString = String(viewersEmailsList).substring(1, String(viewersEmailsList).length - 1)
+    EmailsList = (mailString).split(',')
+
+    sheet_id = addNewSheet(sheetName, EmailsList, columnsTitles);
+    return ContentService.createTextOutput(sheet_id);
+  }
+
+  else if (func == "adduser") {
+    return ContentService.createTextOutput('Done,' + add_User(sheetID, convertStringToMap(userData)));
+  }
+
+  else if (func == "get_all_users") {
+
+    var data = get_all_Users(sheetID);
+    return ContentService.createTextOutput(data).setMimeType(ContentService.MimeType.JSON);
+
+  }
+
+  else if (func == "get_user") {
+
+    user_data = JSON.stringify(get_User(sheetID, uid))
+    return ContentService.createTextOutput(user_data).setMimeType(ContentService.MimeType.JSON);
+  }
+
+  else if (func == "delete_user") {
+
+    return ContentService.createTextOutput(delete_User(sheetID, uid))
+  }
+
+  else if (func == "edit_user") {
+
+    return ContentService.createTextOutput('Done,' + edit_User(sheetID, convertStringToMap(userData), uid))
+  }
+
+  else if (func == "register") {
+
+    return ContentService.createTextOutput(register(sheetID, uid))
+  }
+
+  else if (func == "register_rfid") {
+
+    return ContentService.createTextOutput( register_From_ESP(rfid) )
+  }
+ 
+  return ContentService.createTextOutput( 'Func parameter error' );
+  
+  }
