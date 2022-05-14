@@ -5,18 +5,17 @@ function add_User(sheetID, data) {
   var error = 0;
 
   for (var i in data) {
-
-    var result = sheet.getRange("A1:Z1").createTextFinder(i).matchCase(false).findNext();
+    var result = sheet.getRange("A1:Z1").createTextFinder(i.trim()).matchCase(true).findNext();
     if (result != null) {
       colom = result.getColumn();
-      sheet.getRange(row, colom).setValue(data[i]);
+      sheet.getRange(row, colom).setValue( String(data[i]).trim() );
     }
     else { error++ }
   }
 
   if (error != data.length) {  // user witten 
     var attendance_sheet = ss.getSheets()[1];
-    attendance_sheet.getRange(row, 1).setValue(data['UID']);
+    attendance_sheet.getRange(row, 1).setValue( String(data['UID']).trim() );
   }   /// lenght or lenght()
   return error;
 }
@@ -26,15 +25,15 @@ function edit_User(sheetID, data, userID) {
   var sheet = ss.getSheets()[0];
   var error = 0;
 
-  var search = sheet.createTextFinder(userID).matchCase(false).findNext();
+  var search = sheet.createTextFinder(userID).matchCase(true).findNext();
   if (search != null) {
     var row = search.getRow();
 
     for (var i in data) {
-      var result = sheet.getRange("A1:Z1").createTextFinder(i).matchCase(true).findNext();
+      var result = sheet.getRange("A1:Z1").createTextFinder(i.trim()).matchCase(true).findNext();
       if (result != null) {
         colom = result.getColumn();
-        sheet.getRange(row, colom).setValue(data[i]);
+        sheet.getRange(row, colom).setValue(String(data[i]).trim());
       }
       else { error++ }
     }
@@ -98,25 +97,25 @@ function get_User_attendance(sheet, index) {
     user_attendance[data[0][i]] = data[index][i]
   }
 
-  return data[0][i];
+  return user_attendance;
 }
 
 function get_all_Users(sheetID) {
-
+//sheetID = "1kkoSNn-rxNLO28odT_gHIe8fTUyBmLhgmQg_kohRmyA";
   var ss = SpreadsheetApp.openByUrl("https://docs.google.com/spreadsheets/d/" + sheetID + "/edit");
   var sheet = ss.getSheets()[0];
   var data = sheet.getDataRange().getValues();
   var output = []
-  var user = new Map()
-
+  
+  //Logger.log(data)
   for (i in data) {
-    if (i == 0) { continue }
+    if(i == 0){ continue; }
+    var user = {}
 
     for (j in data[0]) {
-      user[data[0][j]] = data[i][j]
-
+      user[ String(data[0][j]).trim() ] = data[i][j]
     }
-    //Logger.log(user)
+    user['attendance'] = get_User_attendance(ss.getSheets()[1], i) 
     output.push( user )
   }
   Logger.log(output)
@@ -154,15 +153,20 @@ function register(sheetID, userID) {
 }
 
 function register_From_ESP(RFID) {
+    //RFID= '18526';
 
   var groups = getFirebaseData('jCekYTPEXmMD7XJWlJdPPtrLBED2').groups;
+  var c = -1;
 
   for (group in groups) {
-    Logger.log(groups[group])
-    var ss = SpreadsheetApp.openByUrl("https://docs.google.com/spreadsheets/d/" + groups[group] + "/edit");
+    //Logger.log(groups[group])
+        Logger.log(group)
+        c++;
+
+    var ss = SpreadsheetApp.openByUrl("https://docs.google.com/spreadsheets/d/" + group + "/edit");
     var sheet = ss.getSheets()[0];
 
-    var result = sheet.createTextFinder(RFID).matchCase(true).findNext();
+    var result = sheet.createTextFinder(RFID).matchCase(false).findNext();
     if (result != null) {
       var attendance_sheet = ss.getSheets()[1];
       row = result.getRow();
@@ -184,7 +188,7 @@ function register_From_ESP(RFID) {
       var name = get_name(sheet, row);
       var photo = get_photo(sheet, row);
 
-      cardToFirebase(group, photo, RFID, name, 'Done'); //GI,IMG,ID,Name,St
+      cardToFirebase( c, photo, String(RFID), name, 'Done'); //GI,IMG,ID,Name,St
 
       return 'Done'
     }
@@ -193,7 +197,7 @@ function register_From_ESP(RFID) {
   }
 
   Logger.log('not exicteing card')
-  cardToFirebase('none', 'none', RFID, 'none', 'Not Found');
+  cardToFirebase(0, 'none', RFID, 'none', 'Not Found');
 
 }
 
@@ -212,7 +216,7 @@ function get_name(sheet, row) {
 
 function get_photo(sheet, row) {
 
-  var result = sheet.getRange("A1:Z1").createTextFinder('Img').matchCase(true).findNext();
+  var result = sheet.getRange("A1:Z1").createTextFinder('Image').matchCase(true).findNext();
   if (result != null) {
     column = result.getColumn();
     var cell = sheet.getRange(row, column);
