@@ -1,13 +1,20 @@
 function doGet(e) {
 
-  var func = e.parameters.func;
+if(e != null ){
+  var func = e.parameters.func ?? 'get_all_users';
   var sheetName = e.parameters.sheetName;
   var viewersEmailsList = e.parameters.viewersEmailsList;
   var columnsTitles = e.parameters.columnsTitles;
-  var sheetID = e.parameters.sheetID;
+  var sheetID = e.parameters.sheetID ?? '1WLjACA24Fl7L1_r0CPIoKf_G5XncjkrFwmmI_fodXBY';
   var userData = e.parameters.userData;
   var uid = e.parameters.uid;
   var rfid = e.parameters.rfid;
+}
+else{
+  var func = 'get_all_users';
+  var sheetID = '1JJtDtwI_ep1kwtXIc4bIgymjJWfOBlwsQb1hvZ5trO8';
+}
+
 
   if (func == "addsheet") {
     mailString = String(viewersEmailsList).substring(1, String(viewersEmailsList).length - 1)
@@ -55,5 +62,6 @@ function doGet(e) {
   }
  
   return ContentService.createTextOutput( 'Func parameter error' );
-  
-  }
+
+}
+
