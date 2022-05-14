@@ -30,7 +30,7 @@ function cardToFirebase(GI, IMG, ID, Name, St) {
 
   base.setData('jCekYTPEXmMD7XJWlJdPPtrLBED2/lastCard/groupIndex', GI);
   base.setData('jCekYTPEXmMD7XJWlJdPPtrLBED2/lastCard/imgUrl', IMG);
-  base.setData('jCekYTPEXmMD7XJWlJdPPtrLBED2/lastCard/lastID', ID);
+  base.setData('jCekYTPEXmMD7XJWlJdPPtrLBED2/lastCard/lastID', String(ID));
   base.setData('jCekYTPEXmMD7XJWlJdPPtrLBED2/lastCard/name', Name);
   base.setData('jCekYTPEXmMD7XJWlJdPPtrLBED2/lastCard/state', St);
 
